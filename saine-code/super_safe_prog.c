@@ -7,6 +7,8 @@ int main() {
     for(i=1;i<=10;i++){
         printf("Ceci est un programme safe x %d\n",i);
     }
+
+printf("salut frere");
     return 0;
 
 }
