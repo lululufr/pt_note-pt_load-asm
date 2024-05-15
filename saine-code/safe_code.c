@@ -5,6 +5,6 @@ int main(){
 
 int a =12;
 
-puts("Hello le world");
+printf("COUCOU");
 return 0;
 }
