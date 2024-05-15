@@ -1,4 +1,3 @@
-
 section .text
 global _start
 
@@ -6,8 +5,9 @@ _start:
 
 
 
-
-    jmp prout ; Vous pouvez modifier la valeur de l'offset ici
+test rax,rax
+mov rax, 2
+mov rbx, 3
 
 mov rax,rbx 
 mov rcx,0
