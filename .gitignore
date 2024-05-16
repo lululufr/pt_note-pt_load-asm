@@ -1,3 +1,5 @@
 main/*.o
 main/tp_note_to_tp_load
 main/test.txt
+
+main/.gdb_history
