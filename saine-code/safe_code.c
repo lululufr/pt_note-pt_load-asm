@@ -5,7 +5,7 @@ int main(){
 
 int a =12;
 
-printf("COUCOU");
+puts("COUCOU");
 
 return 0;
 }
