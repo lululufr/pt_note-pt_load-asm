@@ -1,5 +1,5 @@
 main/*.o
-main/tp_note_to_tp_load
+main/pt_note_to_pt_load_infector
 main/test.txt
 
 main/.gdb_history
