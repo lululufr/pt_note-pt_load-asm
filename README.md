@@ -23,3 +23,9 @@ IL se compile ainsi :
 ```
 nasm -f elf64 -o pt_note_to_pt_load_infector.o pt_note_to_pt_load_infector.s && ld -o pt_note_to_pt_load_infector pt_note_to_pt_load_infector.o
 ```
+
+il va infecter le programme donné en argument 
+
+```
+./pt_note_to_pt_load_infector ../saine-code/safe_code
+```
