@@ -15,7 +15,7 @@ Il fonctionne sur les ELF avec les arguments -no-pie.
 
 Compiler le programme sain. Il peut être modifié en amont.
 ```
-gcc -no-pie /saine-code/safe_code.c -o /saine-code/safe_code
+gcc -no-pie saine-code/safe_code.c -o saine-code/safe_code
 ```
 
 Compilation de l'infecteur :
@@ -26,18 +26,18 @@ nasm -f elf64 -o main/pt_note_to_pt_load_infector.o main/pt_note_to_pt_load_infe
 Puis lancement du programme :
 Il va infecter le programme donné en argument
 ```
-main/pt_note_to_pt_load_infector /saine-code/safe_code
+main/pt_note_to_pt_load_infector saine-code/safe_code
 ```
 
 ## Pour vérifier le reverse shell : 
 ```
-./saine-code/safe_code
+saine-code/safe_code
 ```
 
 Éxécution normal du programme
 
 ```
-./saine-code/safe_code
+saine-code/safe_code
 ```
 
 En parallèle :

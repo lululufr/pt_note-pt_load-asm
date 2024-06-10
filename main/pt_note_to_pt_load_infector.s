@@ -214,8 +214,8 @@ mov r15, buffer
         add rbx, rdx                  
         dec rcx                        
         xor r13, r13      
-        mov r13d , dword [r15 +rbx] ; PT_NOTE trouvé
-        cmp dword [r15 +rbx], 0x4  ; PT_NOTE valeur
+        mov r13d , dword [r15 +rbx] 
+        cmp dword [r15 +rbx], 0x4  ; valeur du PT_NOTE
         je pt_note_ok
         cmp rcx, 0
         jg loop_seg
