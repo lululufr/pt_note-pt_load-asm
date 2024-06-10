@@ -247,7 +247,7 @@ mov r15, buffer
 
     mov rax, 0          ; read 
     mov rsi, old_entry_point  ; adresse où stocker l'ancien entry point
-    mov rdx, 8          ; taille de l'entrée à lire (8 octets pour un pointeur)
+    mov rdx, 8          ; taille de l'entrée à lire
     syscall
 
 ;=============== change entry point =================

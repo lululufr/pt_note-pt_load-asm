@@ -4,7 +4,7 @@ Lucas MILLER 3SI4
 
 Ce projet est un programme d'infection d'ELF à travers la méthode pt_note to pt_load.
 
-Il n'est pas nécessaire de désactiver l'ASLR.
+Il n'est **pas** nécessaire de désactiver l'ASLR.
 Ce programme est dynamique et ne nécessite donc pas de modifier le code lors de l'utilisation sur un autre programme.
 Une fois infecté, le programme va, lors de son lancement, exécuter un reverse shell sur l'IP choisie.
 L'IP peut être choisie lors du lancement, mais le port sera toujours 4444.
